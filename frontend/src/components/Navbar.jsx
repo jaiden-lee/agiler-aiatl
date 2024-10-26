@@ -1,4 +1,4 @@
-import { Link, Navigate, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "../utils/context";
 import { Button } from "@mantine/core";
@@ -6,7 +6,6 @@ import supabase from "../utils/supabase";
 
 function Navbar() {
     const user = useContext(UserContext);
-    const path = useLocation().pathname;
     const {project_id} = useParams();
 
     function handleLogout() {

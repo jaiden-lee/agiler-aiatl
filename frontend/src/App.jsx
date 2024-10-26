@@ -13,7 +13,6 @@ import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
 import Manage from "./pages/Manage";
 // Components
-import Navbar from "./components/Navbar";
 import NavLayout from "./components/NavLayout";
 
 function App() {
@@ -33,7 +32,7 @@ function App() {
         setUser(null);
       }
     });
-  }, []);
+  }, [canRedirect]);
 
   return (
       <UserContext.Provider value={user}>

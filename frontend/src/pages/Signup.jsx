@@ -1,5 +1,4 @@
-import { TextInput, PasswordInput, Button } from "@mantine/core";
-import {useForm} from "@mantine/form";
+import { Button } from "@mantine/core";
 import supabase from "../utils/supabase";
 
 function Signup() {
