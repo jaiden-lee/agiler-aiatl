@@ -71,7 +71,7 @@ function CreateProjectModal({ onProjectCreated }) { // Accept a prop to refresh 
                 </form>
             </Modal>
 
-            <button onClick={open} className="text-blue-600">Create New Project</button>
+            <button onClick={open} className="text-blue-text">Create New Project</button>
         </>
     );
 }
