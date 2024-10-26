@@ -27,7 +27,7 @@ function RecordUploadModal() {
                 </Group>
             </Modal>
 
-            <Button className="text-white ml-auto" radius={25} onClick={open}>Record/Upload Meeting</Button>
+            <Button className="text-white" radius={25} onClick={open}>Record/Upload Meeting</Button>
         </>
     );
 }
