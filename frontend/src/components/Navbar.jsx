@@ -14,7 +14,7 @@ function Navbar() {
     return (
         <nav className="flex justify-center items-center">
             <div className="flex gap-8 px-8 items-center py-4 w-full max-w-[80rem]">
-                <Link to={user ? "/dashboard" : "/"} className="font-bold text-lg">agiler</Link>
+                <Link to={user ? "/dashboard" : "/"} className="font-bold text-xl">agiler</Link>
 
 
                 <div className="ml-auto flex gap-8 items-center">
