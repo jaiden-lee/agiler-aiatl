@@ -8,7 +8,11 @@ export default {
     extend: {
       colors: {
         "blue-text": "#2196F3",
-        "gray-text": "#7D7D7D"
+        "gray-text": "#7D7D7D",
+        "yellow-in-progress": "#F6EEDC",
+        "green-completed": "#DDE9E5",
+        "gray-unfinished": "#EAEAEA",
+        "orange-primary": "#F35D21"
       }
     },
   },
