@@ -11,16 +11,22 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Documents from "./pages/Documents";
+import Manage from "./pages/Manage";
 // Components
 import Navbar from "./components/Navbar";
+import NavLayout from "./components/NavLayout";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [canRedirect, setCanRedirect] = useState(false);
   
   
   // Keeps track of if user is logged in or not and has user data
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
+      if (!canRedirect) {
+        setCanRedirect(true);
+      }
       if (session) {
         setUser(session.user);
       } else {
@@ -30,25 +36,24 @@ function App() {
   }, []);
 
   return (
-    <div className="inter">
       <UserContext.Provider value={user}>
         <MantineProvider>
           <BrowserRouter>
-            <Navbar />
 
-            <div className="px-8">
               <Routes>
-                <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Home />} />
-                <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
-                <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <Signup />} />
-                <Route path="/dashboard" element={!user ? <Navigate to="/" /> : <Dashboard />} />
-                <Route path="/documents" element={!user ? <Navigate to="/" /> : <Documents />} />
+                <Route element={<NavLayout />}>
+                  <Route path="/" element={(user && canRedirect) ? <Navigate to="/projects" /> : <Home />} />
+                  <Route path="/login" element={(user && canRedirect) ? <Navigate to="/projects" /> : <Login />} />
+                  <Route path="/signup" element={(user && canRedirect) ? <Navigate to="/projects" /> : <Signup />} />
+                  <Route path="/projects/:project_id/dashboard" element={(!user && canRedirect) ? <Navigate to="/" /> : <Dashboard />} />
+                  <Route path="/projects/:project_id/documents" element={(!user && canRedirect) ? <Navigate to="/" /> : <Documents />} />
+                  <Route path="/projects" element={(!user && canRedirect) ? <Navigate to="/" /> : <Manage />} />
+                </Route>
+                
               </Routes>
-            </div>
           </BrowserRouter>
       </MantineProvider>
      </UserContext.Provider>
-    </div>
   );
 }
 
