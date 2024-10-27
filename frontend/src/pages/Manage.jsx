@@ -4,7 +4,6 @@ import supabase from "../utils/supabase";
 import { UserContext } from "../utils/context";
 import CreateProjectModal from '../components/CreateProjectModal';
 import { useNavigate } from 'react-router-dom';
-import { callGeminiFunction } from '../components/GeminiAPI';
 
 function Manage() {
     const user = useContext(UserContext);

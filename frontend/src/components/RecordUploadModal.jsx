@@ -1,10 +1,14 @@
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, Textarea, Group, FileInput } from '@mantine/core';
-import React, { useState, useRef } from 'react';
+import { Modal, Button, Textarea, Group, FileInput, LoadingOverlay } from '@mantine/core';
+import React, { useState, useRef, useContext } from 'react';
 import { UserContext } from "../utils/context";
 import { useParams } from 'react-router-dom';
+import axios from "axios";
 
-function RecordUploadModal() {
+function RecordUploadModal(props) {
+  const {setRefreshToggle} = props;
+  const user = useContext(UserContext);
+  const userId = user?.id
   const [opened, { open, close }] = useDisclosure(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedFile, setRecordedFile] = useState(null); // State for the recorded audio file
@@ -13,6 +17,8 @@ function RecordUploadModal() {
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
   const {project_id} = useParams();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRecord = async () => {
     if (!isRecording) {
@@ -54,34 +60,23 @@ function RecordUploadModal() {
     setTextInput("");
   };
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const formData = new FormData();
-    const user = useContext(UserContext);
-    const userId = user?.id
+    
 
-    formData.append('user_id', userId)
     formData.append('project_id', project_id)
-
+    setIsLoading(true);
     if (recordedFile) {
-        formData.append('file', recordedFile);
-        fetch('http://localhost:8000/upload-audio', {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
+        formData.append('audio', recordedFile);
+        const res = await axios.post("http://localhost:8000/upload-audio", formData);
+        
     }else {
-        formData.append('notes', textInput);
-        fetch('http://localhost:8000/upload-audio', {
-            method: 'POST',
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
+        formData.append('text', textInput);
+        const res = await axios.post("http://localhost:8000/upload-text", formData);
     }
+    setIsLoading(false);
     handleClose();
+    setRefreshToggle(true);
   }
 
   return (
@@ -94,6 +89,7 @@ function RecordUploadModal() {
         size="lg"
         padding={36}
       >
+        <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
         <Textarea
           rows={8}
           label="Enter in Meeting Notes"

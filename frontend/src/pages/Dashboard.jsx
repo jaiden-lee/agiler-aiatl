@@ -173,7 +173,7 @@ function Dashboard() {
                             <h2 className="text-xl font-semibold">🚀 Progress Overview</h2>
                             <div className="ml-auto flex gap-4">
                                 <CreateUserStoryModal project_id={project_id} setRefreshToggle={setRefreshToggle} />
-                                <RecordUploadModal />
+                                <RecordUploadModal setRefreshToggle={setRefreshToggle} />
                             </div>
                         </div>
                         <Accordion variant="contained" className="mt-8">

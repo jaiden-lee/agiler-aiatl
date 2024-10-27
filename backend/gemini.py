@@ -59,7 +59,7 @@ You are a product manager that is managing the user stories and the tasks for a 
 You will be given 3 inputs: USER STORIES, TASKS, and MEETING NOTES. Your goal is to update the USER STORIES and TASKS given these MEETING NOTES.
 
 STORY OUTPUT DESCRIPTION:
-id: an integer. This represents the id of the user story. If you create a new task, set the id = 0.
+id: an integer. This represents the id of the user story. If you create a new task, set the a number < 0, so id < 0.
 story: a string. This should be in the format of a user story. ie: "As a user, I would like to..."
 title: a string no more than 50 characters. This should be a brief description of the user story.
 points: an integer from 1 to 21. Lower values are easier, higher values are more difficult. Each value should be a value from the Fibonacci Sequence (1, 3, 5, 8, 13, 21)
@@ -143,7 +143,7 @@ MEETING NOTES: {meeting_input}""".strip()
 
     for i in range(3):
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-3-sonnet-20240229",
             max_tokens=1024,
             system=(system + input_string),
             messages=[
@@ -156,10 +156,20 @@ MEETING NOTES: {meeting_input}""".strip()
                 }
             ]
         )
+        # replace : "  and ,"   with : '   and ,"
+        text = message.content[0].text.strip()
+        text = text[text.index("{"):len(text) - text[::-1].index("}")]
+        text = text.replace(": '", ': "')
+        text = text.replace("',", '",')
+        text = text.replace("'}", '"}')
+        text = text.replace("True", "true")
+        text = text.replace("False", "false")
         try:
-            res = json.loads(message.content[0].text.strip())
+            res = json.loads(text)
+            print("SUCCESS: " +text)
             return res
         except:
+            print("FAIL: " +text)
             continue
     return {"error": "failed"}
 
@@ -171,6 +181,6 @@ stories = [{"id": 1, "points": 8, "story": "As a user I want to be able to searc
 tasks = [{'task_id': 29, 'story_id': 1, 'name': 'Create an "Add to Cart" button', 'difficulty': 5, 'priority': 1, 'status': 1, 'dependencies': []}, {"dependencies": [], "difficulty": 13, "task_id": 1, "name": "Implement restaurant search functionality", "priority": 10, "status": 0, "stor": 1}, {"dependencies": [1], "difficulty": 8, "task_id": 2, "name": "Display search results", "priority": 9, "status": 0, "story_id": 1}, {"dependencies": [], "difficulty": 13, "task_id": 3, "name": "Implement user location services", "priority": 8, "status": 0, "story_id": 1}, {"dependencies": [3], "difficulty": 8, "task_id": 4, "name": "Implement user authentication", "priority": 6, "status": 0, "story_id": 2}, {"dependencies": [2], "difficulty": 5, "task_id": 5, "name": "Implement saved restaurants functionality", "priority": 5, "status": 0, "story_id": 2}, {"dependencies": [3, 4], "difficulty": 3, "task_id": 6, "name": "Create saved restaurants page", "priority": 5, "status": 0, "story_id": 2}, {"dependencies": [4], "difficulty": 8, "task_id": 7, "name": "Implement search filters", "priority": 7, "status": 0, "story_id": 3}, {"dependencies": [2], "difficulty": 8, "task_id": 9, "priority": 7, "status": 0, "story_id": 8}]
 # tasks = [{'task_id': 1, 'story_id': 1, 'name': 'Create an "Add to Cart" button', 'difficulty': 5, 'priority': 1, 'status': 1, 'dependencies': []}, {'task_id': 2, 'story_id': 1, 'name': 'Validate that the correct item details are added to the cart.', 'difficulty': 3, 'priority': 2, 'status': 0, 'dependencies': [1]}]
 # result = gemini(True, "We have finished all tasks regarding search capabilities but our client wants to add a new feature where a logged in user can write and post reviews through our site", desc, json.dumps(stories), json.dumps(tasks))
-result = gemini(False, "meeting.txt", desc, json.dumps(stories), json.dumps(tasks))
+# result = gemini(False, "meeting.txt", desc, json.dumps(stories), json.dumps(tasks))
 # print(json.loads(result[0].text.strip()))
-print(result)
+# print(result)

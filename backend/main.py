@@ -33,6 +33,8 @@ async def root():
 
 @app.post("/upload-audio")
 async def upload_audio(project_id: Annotated[str, Form()], audio: UploadFile = File(...)): # , audio: UploadFile = File(...)
+    print(project_id)
+    print(audio.filename)
     try:
         data = supabase.table("projects").select("description").eq("project_id", project_id).execute()
         description = data.data[0]["description"]
@@ -40,9 +42,6 @@ async def upload_audio(project_id: Annotated[str, Form()], audio: UploadFile = F
         stories = data.data
         data = supabase.rpc("fetch_project_tasks", {"p_project_id": project_id}).execute()
         tasks = data.data
-
-        print(tasks)
-        print(stories)
         
         # Create a temporary directory
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -53,20 +52,154 @@ async def upload_audio(project_id: Annotated[str, Form()], audio: UploadFile = F
             try:
                 with open(temp_path, "wb") as buffer:
                     shutil.copyfileobj(audio.file, buffer)
-                # desc = ("This is an app that allows users to find restaurants near to their current location. Users can use this app to "
-                #     "search for restaurants based off of location, cusine, distance, ratings, etc. The user can view restaurant details and "
-                #     "save restaurants to their account")
-                # tasks = [{"dependencies": [], "difficulty": 13, "task_id": 1, "name": "Implement restaurant search functionality", "priority": 10, "status": 0, "story_id": 1}, {"dependencies": [1], "difficulty": 8, "task_id": 2, "name": "Display search results", "priority": 9, "status": 0, "story_id": 1}, {"dependencies": [], "difficulty": 13, "task_id": 3, "name": "Implement user location services", "priority": 8, "status": 0, "story_id": 1}, {"dependencies": [3], "difficulty": 8, "task_id": 4, "name": "Implement user authentication", "priority": 6, "status": 0, "story_id": 2}, {"dependencies": [2], "difficulty": 5, "task_id": 5, "name": "Implement saved restaurants functionality", "priority": 5, "status": 0, "story_id": 2}, {"dependencies": [3, 4], "difficulty": 3, "task_id": 6, "name": "Create saved restaurants page", "priority": 5, "status": 0, "story_id": 2}, {"dependencies": [4], "difficulty": 8, "task_id": 7, "name": "Implement search filters", "priority": 7, "status": 0, "story_id": 3}, {"dependencies": [2], "difficulty": 8, "task_id": 9, "priority": 7, "status": 0, "story_id": 8}]
-
-                # stories = [{"id": 1, "points": 8, "story": "As a user I want to be able to search for restaurants based on name, cuisine, rating, and distance from me. I want to find restaurants that are near my current location.", "title": "Search for Restaurants"}, {"id": 2, "points": 3, "story": "as a logged in user, i want to be able to save restaurants to my profile where i can view them in a saved restaurants page", "title": "Save Restaurants"}, {"id": 3, "points": 5, "story": "as a user i want to be able to filter search results by distance, rating, cuisine.", "title": "Filter Search Results"}, {"id": 8, "points": 5, "story": "As a user, I want to be able to view restaurant details such as opening hours, address, phone number, and menu when I select a restaurant from the search results.", "title": "View Restaurant Details"}]
-                res = gemini(True, "We have finished all tasks regarding search capabilities but our client wants to add a new feature where a logged in user can write and post reviews through our site", description, stories, tasks)
+                
+                res = gemini(False, temp_path, description, stories, tasks)
+                if "error" in res:
+                    return {"message": "The model failed to generate the proper output"}
+                
+                
+                
+                idMap = {}
+                if "stories" in res:
+                    output_stories = res["stories"]
+                    for story in output_stories:
+                        if story["new"] == True:
+                            try:
+                                data = supabase.table("user_stories").insert({
+                                    "title": story["title"],
+                                    "story": story["story"],
+                                    "points": story["points"],
+                                    "project_id": project_id
+                                }).execute()
+                                idMap[story["id"]] = data.data[0]["id"]
+                            except Exception as e:
+                                print(str(e))
+                        else:
+                            try:
+                                supabase.table("user_stories").update({
+                                    "title": story["title"],
+                                    "story": story["story"],
+                                    "points": story["points"]
+                                }).eq("id", story["id"]).execute()
+                            except:
+                                print(str(e))
+                if "tasks" in res:
+                    output_tasks = res["tasks"]
+                    for task in output_tasks:
+                        if task["new"] == True:
+                            try:
+                                data = supabase.table("tasks").insert({
+                                    "story_id": idMap[task["story_id"]],
+                                    "name": task["name"],
+                                    "difficulty": task["difficulty"],
+                                    "priority": task["priority"],
+                                    "status": task["status"],
+                                    "dependencies": task["dependencies"]
+                                }).execute()
+                                print(data)
+                            except Exception as e:
+                                print(str(e))
+                        else:
+                            try:
+                                data = supabase.table("tasks").update({
+                                    "story_id": task["story_id"],
+                                    "name": task["name"],
+                                    "difficulty": task["difficulty"],
+                                    "priority": task["priority"],
+                                    "status": task["status"],
+                                    "dependencies": task["dependencies"]
+                                }).eq("task_id", task["task_id"]).execute()
+                                print(data)
+                            except Exception as e:
+                                print()
+                                print(str(e))
 
                 # Delete the temporary MP3 file
                 os.remove(temp_path)
-                print(res.text)
-                return {"message": "hi"}
+                print(res)
+                return {"success": True}
             except Exception as e:
                 return {"message": f"Error processing MP3 file: {str(e)}"}
+        # return {"description": description, "stories": stories, "tasks": tasks}
+    except Exception as e:
+        return {"message": str(e)}
+
+
+@app.post("/upload-text")
+async def upload_audio(project_id: Annotated[str, Form()], text: Annotated[str, Form()]): # , audio: UploadFile = File(...)
+    print(project_id)
+    try:
+        data = supabase.table("projects").select("description").eq("project_id", project_id).execute()
+        description = data.data[0]["description"]
+        data = supabase.table("user_stories").select("id, title, story, points").eq("project_id", project_id).execute()
+        stories = data.data
+        data = supabase.rpc("fetch_project_tasks", {"p_project_id": project_id}).execute()
+        tasks = data.data
+        
+        res = gemini(True, text, description, stories, tasks)
+        if "error" in res:
+            return {"message": "The model failed to generate the proper output"}
+        
+        
+        
+        idMap = {}
+        if "stories" in res:
+            output_stories = res["stories"]
+            for story in output_stories:
+                if story["new"] == True:
+                    try:
+                        data = supabase.table("user_stories").insert({
+                            "title": story["title"],
+                            "story": story["story"],
+                            "points": story["points"],
+                            "project_id": project_id
+                        }).execute()
+                        idMap[story["id"]] = data.data[0]["id"]
+                    except Exception as e:
+                        print(str(e))
+                else:
+                    try:
+                        supabase.table("user_stories").update({
+                            "title": story["title"],
+                            "story": story["story"],
+                            "points": story["points"]
+                        }).eq("id", story["id"]).execute()
+                    except:
+                        print(str(e))
+        if "tasks" in res:
+            output_tasks = res["tasks"]
+            for task in output_tasks:
+                if task["new"] == True:
+                    try:
+                        data = supabase.table("tasks").insert({
+                            "story_id": idMap[task["story_id"]],
+                            "name": task["name"],
+                            "difficulty": task["difficulty"],
+                            "priority": task["priority"],
+                            "status": task["status"],
+                            "dependencies": task["dependencies"]
+                        }).execute()
+                        print(data)
+                    except Exception as e:
+                        print(str(e))
+                else:
+                    try:
+                        data = supabase.table("tasks").update({
+                            "story_id": task["story_id"],
+                            "name": task["name"],
+                            "difficulty": task["difficulty"],
+                            "priority": task["priority"],
+                            "status": task["status"],
+                            "dependencies": task["dependencies"]
+                        }).eq("task_id", task["task_id"]).execute()
+                        print(data)
+                    except Exception as e:
+                        print()
+                        print(str(e))
+
+        # Delete the temporary MP3 file
+        print(res)
+        return {"success": True}
         # return {"description": description, "stories": stories, "tasks": tasks}
     except Exception as e:
         return {"message": str(e)}
