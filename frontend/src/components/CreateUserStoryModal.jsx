@@ -1,5 +1,5 @@
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, TextInput, Group, Textarea, NumberInput } from '@mantine/core';
+import { Modal, Button, TextInput, Group, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import supabase from '../utils/supabase';
 
@@ -28,7 +28,7 @@ function CreateUserStoryModal(props) {
 
     async function saveChanges(values) {
         if (form.isValid) {
-            const data = await supabase.from("user_stories").insert({
+            await supabase.from("user_stories").insert({
                 title: values.title,
                 story: values.story,
                 project_id: project_id,

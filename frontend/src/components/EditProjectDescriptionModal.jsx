@@ -27,7 +27,7 @@ function EditProjectDescriptionModal(props) {
     async function saveChanges(values) {
         if (form.isValid) {
             form.setInitialValues(values);
-            const data = await supabase.from("projects").update({
+            await supabase.from("projects").update({
                 title: values.projectTitle,
                 description: values.projectDescription
             }).eq("project_id", project_id);

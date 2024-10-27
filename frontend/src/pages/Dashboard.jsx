@@ -43,8 +43,8 @@ function Dashboard() {
                         description: projectData.description
                     });
                     const [
-                        {data: stories_data, error: stories_error}, 
-                        {data: tasks_data, error: tasks_error}
+                        {data: stories_data}, 
+                        {data: tasks_data}
                     ] = await Promise.all([
                         supabase.from("user_stories").select("id, title, story, points").eq("project_id", project_id),
                         supabase.rpc("fetch_project_tasks", {
@@ -83,7 +83,7 @@ function Dashboard() {
         if (user) {
             fetchProjectData();
         }
-    }, [supabase, user, userId, refreshToggle]);
+    }, [user, userId, refreshToggle, project_id]);
 
     
 

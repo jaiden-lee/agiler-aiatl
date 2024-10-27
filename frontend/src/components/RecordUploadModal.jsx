@@ -1,14 +1,11 @@
 import { useDisclosure } from '@mantine/hooks';
 import { Modal, Button, Textarea, Group, FileInput, LoadingOverlay } from '@mantine/core';
-import React, { useState, useRef, useContext } from 'react';
-import { UserContext } from "../utils/context";
+import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from "axios";
 
 function RecordUploadModal(props) {
   const {setRefreshToggle} = props;
-  const user = useContext(UserContext);
-  const userId = user?.id
   const [opened, { open, close }] = useDisclosure(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordedFile, setRecordedFile] = useState(null); // State for the recorded audio file
@@ -68,11 +65,11 @@ function RecordUploadModal(props) {
     setIsLoading(true);
     if (recordedFile) {
         formData.append('audio', recordedFile);
-        const res = await axios.post("http://localhost:8000/upload-audio", formData);
+        await axios.post("https://agiler-aiatl-883248776433.us-east4.run.app/upload-audio", formData);
         
     }else {
         formData.append('text', textInput);
-        const res = await axios.post("http://localhost:8000/upload-text", formData);
+        await axios.post("https://agiler-aiatl-883248776433.us-east4.run.app/upload-text", formData);
     }
     setIsLoading(false);
     handleClose();

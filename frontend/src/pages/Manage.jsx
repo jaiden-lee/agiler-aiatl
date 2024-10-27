@@ -1,4 +1,4 @@
-import { Grid, Card, Button, Group, TextInput } from '@mantine/core';
+import { Button } from '@mantine/core';
 import { useEffect, useState, useContext } from 'react';
 import supabase from "../utils/supabase";
 import { UserContext } from "../utils/context";
@@ -31,8 +31,25 @@ function Manage() {
     };
 
     useEffect(() => {
+        const fetchProjects = async () => {
+            if (!userId) return; // Ensure userId is available
+            try {
+                const { data, error } = await supabase
+                    .from('projects')
+                    .select()
+                    .eq("user_id", userId);
+    
+                if (error) {
+                    throw error;
+                }
+    
+                setProjects(data);
+            } catch (error) {
+                console.log(error);
+            }
+        };
         fetchProjects(); // Call fetchProjects when user changes
-    }, [user, userId]);
+    }, [user, userId ]);
 
     const handleViewProject = (projectId) => {
         navigate(`/projects/${projectId}/dashboard`);
