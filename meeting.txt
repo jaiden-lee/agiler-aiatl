@@ -1,0 +1,1 @@
+We have finished all tasks regarding search capabilities but our client wants to add a new feature where a logged in user can write and post reviews through our site

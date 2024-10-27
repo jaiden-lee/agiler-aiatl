@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@mantine/carousel": "^7.13.4",
     "@mantine/charts": "^7.13.4",
     "@mantine/code-highlight": "^7.13.4",
