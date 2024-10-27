@@ -5,6 +5,7 @@ import { UserContext } from "../utils/context";
 import EditProjectDescriptionModal from "../components/EditProjectDescriptionModal";
 import { Skeleton, Accordion } from "@mantine/core";
 import RecordUploadModal from "../components/RecordUploadModal";
+import CreateUserStoryModal from "../components/CreateUserStoryModal";
 
 function Dashboard() {
     const {project_id} = useParams();
@@ -18,8 +19,12 @@ function Dashboard() {
     const [userStories, setUserStories] = useState(null);
     // const [tasks, setTasks] = useState(null);
     const [hasPermission, setHasPermission] = useState(true);
+    const [refreshToggle, setRefreshToggle] = useState(false);
     
     useEffect(() => {
+        if (refreshToggle == true) {
+            setRefreshToggle(false);
+        }
         async function fetchProjectData() {
             const {data, error} = await supabase.from("projects").select("title, description").eq("project_id", project_id).eq("user_id", userId);
             console.log(error);
@@ -78,7 +83,7 @@ function Dashboard() {
         if (user) {
             fetchProjectData();
         }
-    }, [supabase, user, userId]);
+    }, [supabase, user, userId, refreshToggle]);
 
     
 
@@ -166,7 +171,10 @@ function Dashboard() {
                     <div>
                         <div className="flex gap-4">
                             <h2 className="text-xl font-semibold">🚀 Progress Overview</h2>
-                            <RecordUploadModal />
+                            <div className="ml-auto flex gap-4">
+                                <CreateUserStoryModal project_id={project_id} setRefreshToggle={setRefreshToggle} />
+                                <RecordUploadModal />
+                            </div>
                         </div>
                         <Accordion variant="contained" className="mt-8">
                             {userStoryComponents}

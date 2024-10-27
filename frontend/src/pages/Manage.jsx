@@ -39,10 +39,29 @@ function Manage() {
         navigate(`/projects/${projectId}/dashboard`);
     };
 
+    const projectComponents = projects.map((project, index) => {
+        const colorIndex = index%3;
+        const bgColor = colorIndex == 0 ? "bg-orange-background" : (colorIndex == 1 ? "bg-yellow-background" : "bg-pink-background");
+        const textColor = colorIndex == 0 ? "text-orange-primary" : (colorIndex == 1 ? "text-yellow-primary" : "text-pink-primary");
+
+        return (
+        <div className={`aspect-square flex flex-col gap-4 shadow-md rounded-xl p-8 ${bgColor}`} key={project.project_id}>
+            <p className={`text-xl font-medium ${textColor} text-nowrap overflow-clip`}>
+                {project.title}
+            </p>
+            
+            <p className="overflow-clip gap-2 max-h-[calc(100%-8rem)] text-[rgb(0,0,0,.5)]">
+                {project.description}
+            </p>
+
+            <Button className="bg-primary-orange mt-auto" color={colorIndex == 0 ? "orange" : (colorIndex == 1 ? "yellow" : "pink")} radius={100} onClick={() => handleViewProject(project.project_id)}>View Project</Button>
+        </div>
+        )})
+
     return (
         <div className="p-4">
             <h1 className="text-left text-3xl font-bold pt-10">Current Projects</h1>
-            <div className='flex space-x-4'>
+            <div className='flex space-x-4 gap-4 py-2'>
                 <div className='flex items-center pb-4 pt-2 text-blue-text'>
                     <CreateProjectModal onProjectCreated={fetchProjects} /> {/* Pass the function here */}
                 </div>
@@ -56,37 +75,9 @@ function Manage() {
                     There are no projects, create a new project to get started.
                 </p>
             ): (
-                <Grid gutter="md">
-                    {projects.map((project) => (
-                        <Grid.Col key={project.project_id} span={3}>
-                        <Card shadow="sm" padding="lg" radius="md" withBorder className="w-64 h-64 flex flex-col">
-                            <div className="flex-grow">
-                                <p className="text-xl font-bold">
-                                    {project.title}
-                                </p>
-                                <hr className="border-t-2 border-gray-300" />
-                    
-                                <div style={{ maxHeight: '9rem', overflowY: 'auto' }} className="mb-1">
-                                    <p
-                                        className="mb-4 pt-2 pb-1"
-                                        style={{
-                                            display: '-webkit-box',
-                                            WebkitBoxOrient: 'vertical',
-                                            WebkitLineClamp: 6,
-                                        }}
-                                    >
-                                        {project.description}
-                                    </p>
-                                </div>
-                            </div>
-                    
-                            <Button variant="dark" color="blue" fullWidth onClick={() => handleViewProject(project.project_id)}>
-                                View Project
-                            </Button>
-                        </Card>
-                    </Grid.Col>                    
-                    ))}
-                </Grid>
+                <div className="w-full grid grid-cols-4 gap-6">
+                    {projectComponents}
+                </div>
             )}
             
         </div>
